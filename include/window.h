@@ -9,7 +9,7 @@ public:
 
     void create_window();
     void update();
-
+    GLFWwindow* getHandle();
     bool is_running = false;
 
 private:

@@ -13,7 +13,7 @@ Engine::Engine()
 
     init();
 
-    m_window = std::make_unique<Window>();
+    
 }
 
 void Engine::loop()
@@ -21,7 +21,7 @@ void Engine::loop()
     while (m_window->is_running)
     {
         m_window->update();
-        // do stuff here
+        m_renderer->render();
     }
 
     // engine cleanup
@@ -40,8 +40,13 @@ void Engine::init()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    m_window = std::make_unique<Window>();
+    m_renderer = std::make_unique<Renderer>(m_window.get());
+
 }
 
 void Engine::cleanup()
 {
+    glfwTerminate();
 }

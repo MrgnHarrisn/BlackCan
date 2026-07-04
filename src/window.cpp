@@ -45,8 +45,12 @@ void Window::create_window()
 
 void Window::update()
 {
-    glfwSwapBuffers(m_window);
     glfwPollEvents();
+    is_running = !glfwWindowShouldClose(m_window);
+}
+
+GLFWwindow* Window::getHandle() {
+    return m_window;
 }
 
 void Window::framebuffer_size_callback(GLFWwindow *window, int width, int height)

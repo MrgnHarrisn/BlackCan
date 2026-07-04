@@ -25,7 +25,7 @@ public:
     // --- Window specific getters ---
     int getWindowWidth() const { return value("window.width", 800); }
     int getWindowHeight() const { return value("window.height", 600); }
-    std::string getWindowTitle() const { return value("window.title", std::string("My App")); }
+    std::string getWindowTitle() const { return value("window.title", std::string("My Game")); }
 
     // --- Additional window settings (optional) ---
     bool isWindowResizable() const { return value("window.resizable", false); }
