@@ -11,6 +11,7 @@ add_requires("spdlog 1.17.0")
 add_requires("stb 2026.03.18")
 add_requires("nlohmann_json 3.12.0")
 add_requires("glm 1.0.3")
+add_requires("sol2 3.5.0")
 
 target("BlackCan")
     set_kind("binary")
@@ -18,4 +19,4 @@ target("BlackCan")
     add_includedirs("include/")
     add_packages("fmt", "glfw", "glad",
                 "imgui", "assimp", "spdlog",
-                "stb", "nlohmann_json", "glm")
+                "stb", "nlohmann_json", "glm", "sol2")

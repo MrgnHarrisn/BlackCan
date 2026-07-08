@@ -1,11 +1,8 @@
-
-#include <memory>
-#include <iostream>
 #include "engine.h"
-#include "utils.h"
+#include <memory>
 
-int main() {
-
-    auto engine = std::make_unique<Engine>();
-    engine->loop();
+int main()
+{
+	auto engine = std::make_unique<Engine>();
+	engine->loop();
 }
