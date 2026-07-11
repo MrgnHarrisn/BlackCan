@@ -3,7 +3,7 @@
 #include <glad/glad.h>
 #include <string>
 
-using namespace  std;
+using namespace std;
 
 Mesh::Mesh(vector<Vertex> verts, vector<unsigned int> indi,
 		   vector<Texture> texs)
@@ -15,31 +15,31 @@ Mesh::Mesh(vector<Vertex> verts, vector<unsigned int> indi,
 	setup();
 }
 
-void Mesh::Draw(Shader &shader) 
+void Mesh::Draw(Shader &shader)
 {
-    unsigned int diffuseNr = 1;
-    unsigned int specularNr = 1;
-    for(unsigned int i = 0; i < textures.size(); i++)
-    {
-        glActiveTexture(GL_TEXTURE0 + i); // activate proper texture unit before binding
-        // retrieve texture number (the N in diffuse_textureN)
-        string number;
-        string name = textures[i].type;
-        if(name == "texture_diffuse")
-            number = to_string(diffuseNr++);
-        else if(name == "texture_specular")
-            number = to_string(specularNr++);
+	unsigned int diffuseNr = 1;
+	unsigned int specularNr = 1;
+	for (unsigned int i = 0; i < textures.size(); i++)
+	{
+		glActiveTexture(GL_TEXTURE0 + i); // activate proper texture unit before binding
+		// retrieve texture number (the N in diffuse_textureN)
+		string number;
+		string name = textures[i].type;
+		if (name == "texture_diffuse")
+			number = to_string(diffuseNr++);
+		else if (name == "texture_specular")
+			number = to_string(specularNr++);
 
-        shader.setInt(("material." + name + number).c_str(), i);
-        glBindTexture(GL_TEXTURE_2D, textures[i].id);
-    }
-    glActiveTexture(GL_TEXTURE0);
+		shader.setInt(("material." + name + number).c_str(), i);
+		glBindTexture(GL_TEXTURE_2D, textures[i].id);
+	}
+	glActiveTexture(GL_TEXTURE0);
 
-    // draw mesh
-    glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
-} 
+	// draw mesh
+	glBindVertexArray(VAO);
+	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
+}
 
 void Mesh::setup()
 {
@@ -66,4 +66,53 @@ void Mesh::setup()
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, TexCoords));
 
 	glBindVertexArray(0);
+}
+
+// Move Constructor
+Mesh::Mesh(Mesh&& other) noexcept 
+    : vertices(std::move(other.vertices)), 
+      indices(std::move(other.indices)), 
+      textures(std::move(other.textures)),
+      VAO(other.VAO), 
+      VBO(other.VBO), 
+      EBO(other.EBO) 
+{
+    // clear out the temporary object's buffers so we don't delete them in the destructor
+    other.VAO = 0;
+    other.VBO = 0;
+    other.EBO = 0;
+}
+
+// move assignment
+Mesh& Mesh::operator=(Mesh&& other) noexcept {
+    if (this != &other) {
+        
+		// free the existing things
+        glDeleteVertexArrays(1, &VAO);
+        glDeleteBuffers(1, &VBO);
+        glDeleteBuffers(1, &EBO);
+
+        // get the new stuff
+        vertices = std::move(other.vertices);
+        indices = std::move(other.indices);
+        textures = std::move(other.textures);
+        VAO = other.VAO;
+        VBO = other.VBO;
+        EBO = other.EBO;
+
+        // clean other object
+        other.VAO = 0;
+        other.VBO = 0;
+        other.EBO = 0;
+    }
+    return *this;
+}
+
+// destructor
+Mesh::~Mesh() {
+    if (VAO != 0) {
+        glDeleteVertexArrays(1, &VAO);
+        glDeleteBuffers(1, &VBO);
+        glDeleteBuffers(1, &EBO);
+    }
 }

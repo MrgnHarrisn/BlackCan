@@ -1,16 +1,34 @@
 #include "camera.h"
 
-Camera::Camera()
+Camera::Camera(glm::vec3 position,
+               glm::vec3 up,
+               float yaw, float pitch)
+    : Front(glm::vec3(0.0f, 0.0f, -1.0f)),
+      MovementSpeed(SPEED),
+      MouseSensitivity(SENSITIVITY),
+      Zoom(ZOOM)
 {
-    cameraPosition = glm::vec3(0.0f, 0.0f, 3.0f);
-    cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-    cameraDirection = glm::normalize(cameraPosition - cameraTarget);
-    up = glm::vec3(0.0f, 1.0f, 0.0f);
-    cameraRight = glm::normalize(glm::cross(up, cameraDirection));
-    cameraUp = glm::cross(cameraDirection, cameraRight);
-    
-    glm::mat4 view;
-    view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f),
-                       glm::vec3(0.0f, 0.0f, 0.0f),
-                       glm::vec3(0.0f, 1.0f, 0.0f));
+    Position = position;
+    WorldUp = up;
+    Yaw = yaw;
+    Pitch = pitch;
+    updateCameraVectors();
+}
+
+void Camera::updateCameraVectors()
+{
+    // calculate front vector
+    glm::vec3 front;
+    front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+    front.y = sin(glm::radians(Pitch));
+    front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+    Front = glm::normalize(front);
+
+    // recalculate right and up vectors
+    Right = glm::normalize(glm::cross(Front, WorldUp));
+    Up = glm::normalize(glm::cross(Right, Front));
+}
+
+glm::mat4 Camera::getProjectionMatrix(float aspectRatio) {
+    return glm::perspective(glm::radians(Zoom), aspectRatio, 0.1f, 100.0f);
 }

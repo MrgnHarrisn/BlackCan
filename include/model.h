@@ -1,5 +1,5 @@
 #pragma once
-
+// basically ripped from learn-opengl
 #include <vector>
 #include "shader.h"
 #include "texture.h"

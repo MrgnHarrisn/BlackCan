@@ -5,29 +5,67 @@
 
 Renderer::Renderer(Window *target) : m_target(target) {}
 
-void Renderer::render() {
-  pre_frame();
+void Renderer::render(Camera& active_camera)
+{
+	pre_frame();
 
-  m_render();
+	m_render(active_camera);
 
-  post_frame();
+	post_frame();
 
-  finish_frame(); // change to submit frame (more implicit)
+	submit_frame();
 }
 
-void Renderer::pre_frame() {
-  glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT);
+void Renderer::pre_frame()
+{
+	Renderer::clear();
 }
 
-void Renderer::m_render() {
-  // actual mesh rendering
+void Renderer::m_render(Camera& active_camera)
+{
+
+	float aspect = (float)m_target->m_width / (float)m_target->m_height;
+	glm::mat4 projection = active_camera.getProjectionMatrix(aspect);
+	glm::mat4 view = active_camera.GetViewMatrix();
+
+	// while the queue isn't empty
+	while (!m_queue.empty()) {
+		RenderCommand item = m_queue.front();
+		m_queue.pop();
+
+		item.shader->use();
+
+		// set the shader values
+		item.shader->setMat4("projection", projection);
+		item.shader->setMat4("view", view);
+		item.shader->setMat4("model", item.transform);
+
+		// draw the model
+		item.model->Draw(*(item.shader));
+
+	}
 }
 
-void Renderer::post_frame() {
-  // do some post processing maybe?
+void Renderer::post_frame()
+{
+	// do some post processing maybe?
 }
 
-void Renderer::finish_frame() { glfwSwapBuffers(m_target->getHandle()); }
+void Renderer::submit_frame()
+{
+	glfwSwapBuffers(m_target->getHandle());
+}
 
-void Renderer::clear() {}
+void Renderer::clear() 
+{
+	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void Renderer::submit(Model* model, Shader* shader, glm::mat4 transform)
+{
+	m_queue.push(RenderCommand{
+		shader, model, transform
+	});
+}

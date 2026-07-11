@@ -1,6 +1,5 @@
 #include "model.h"
 
-
 #include "utils.h"
 
 using namespace std;
@@ -12,19 +11,29 @@ Model::Model(char *path)
 
 void Model::Draw(Shader &shader)
 {
+    for (unsigned int i = 0; i < meshes.size(); i++)
+    {
+        meshes[i].Draw(shader);
+    }
 }
 
 void Model::loadModel(string path)
 {
     Assimp::Importer import;
-    const aiScene *scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+    
+    // DON'T FORGET TO PRE TRANSFORM THE VERTICES YOU IDIOT!!!!!!!
+    const aiScene *scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_PreTransformVertices);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
         Utils::errorMessage("CORE::MODEL", import.GetErrorString());
         return;
     }
-    directory = path.substr(0, path.find_last_of('/'));
+    size_t pos = path.find_last_of("/\\");
+    if (pos != string::npos)
+        directory = path.substr(0, pos);
+    else
+        directory = ".";
 
     processNode(scene->mRootNode, scene);
 }
@@ -77,6 +86,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
         {
             vertex.TexCoords = glm::vec2(0.0f, 0.0f);
         }
+
         vertices.push_back(vertex);
     }
     // process indices
@@ -91,7 +101,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
     }
 
     // process material
-    if (mesh->mMaterialIndex >= 0)
+    if (mesh->mMaterialIndex < scene->mNumMaterials)
     {
         aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
         vector<Texture> diffuseMaps = loadMaterialTextures(material,
@@ -108,7 +118,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName)
 {
     vector<Texture> textures;
-    for(unsigned int i = 0; i < mat->GetTextureCount(type); i++)
+    for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
     {
         aiString str;
         mat->GetTexture(type, i, &str);
@@ -120,4 +130,3 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type,
     }
     return textures;
 }
-
