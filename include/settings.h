@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <filesystem>   // C++17 for directory creation
 
 class Settings
 {
@@ -36,7 +37,6 @@ public:
     template <typename T>
     T value(const std::string &key, const T &default_value = T{}) const
     {
-        // Split key by '.'
         size_t start = 0;
         size_t end = key.find('.');
         nlohmann::json current = data_;
@@ -51,7 +51,6 @@ public:
             end = key.find('.', start);
         }
 
-        // Last part
         std::string last = key.substr(start);
         if (!current.is_object() || !current.contains(last))
             return default_value;
@@ -69,7 +68,7 @@ public:
     // Reload the settings file at runtime
     void reload()
     {
-        loadFromFile("settings.json");
+        loadFromFile(getSettingsPath());
     }
 
 private:
@@ -77,10 +76,26 @@ private:
 
     Settings()
     {
-        loadFromFile("settings.json");
+        // Ensure the settings folder exists
+        std::filesystem::create_directories("settings");
+
+        const std::string path = getSettingsPath();
+
+        // If the file does not exist, create it with default settings
+        if (!std::filesystem::exists(path))
+        {
+            createDefaultSettingsFile(path);
+        }
+
+        loadFromFile(path);
     }
 
     ~Settings() = default;
+
+    static std::string getSettingsPath()
+    {
+        return "settings/settings.json";
+    }
 
     void loadFromFile(const std::string &filename)
     {
@@ -101,6 +116,32 @@ private:
         {
             std::cerr << "JSON parse error in " << filename << ": " << e.what() << '\n';
             data_ = nlohmann::json::object();
+        }
+    }
+
+    // Creates a JSON file with the default settings that match the getters
+    void createDefaultSettingsFile(const std::string &filename) const
+    {
+        nlohmann::json default_json = {
+            {"window", {
+                {"width", 800},
+                {"height", 800},
+                {"title", "My Game"},
+                {"resizable", false},
+                {"fullscreen", false},
+                {"maxFPS", 60}
+            }}
+        };
+
+        std::ofstream file(filename);
+        if (file.is_open())
+        {
+            file << default_json.dump(4);   // pretty print with 4 spaces
+            std::cout << "Created default settings file: " << filename << "\n";
+        }
+        else
+        {
+            std::cerr << "Error: Could not create settings file " << filename << "\n";
         }
     }
 };

@@ -8,13 +8,16 @@
 #include "settings.h"
 #include "utils.h"
 #include "shader.h"
+#include "model.h"
 
 Engine::Engine() { init(); }
 
 void Engine::loop()
 {
 
-	Shader gfx("shaders/basic");
+	Model m("bag/scene.gltf");
+
+	// Shader gfx("shaders/basic");
 
 	while (m_window->is_running)
 	{
@@ -27,7 +30,6 @@ void Engine::loop()
 
 void Engine::init()
 {
-
 	if (!glfwInit())
 	{
 		// failed to initialize glfw
