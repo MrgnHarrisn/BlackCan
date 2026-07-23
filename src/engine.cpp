@@ -9,6 +9,7 @@
 #include "utils.h"
 #include "shader.h"
 #include "model.h"
+#include "light_manager.h"
 
 Engine::Engine() { init(); }
 
@@ -16,7 +17,7 @@ void Engine::loop()
 {
 
 	// trying to get a model to render correctly
-	Model bag("mic/scene.gltf");
+	Model bag("box/scene.gltf");
 	Shader gfx("shaders/basic");
 	Camera main_camera(glm::vec3(0.f, 0.f, 50.f));
 
@@ -26,6 +27,11 @@ void Engine::loop()
 	float dt = 0;
 	float last_frame = 0;
 	float current_time = 0;
+
+	LightManager lm;
+
+	lm.addPointLight({0, 30, 70}, 90, {1, 1, 1}, 2);
+	lm.updateGPU();
 
 	while (m_window->is_running)
 	{
@@ -42,7 +48,7 @@ void Engine::loop()
 		glm::mat4 transform = glm::mat4(1.f);
 		transform = glm::rotate(transform, current_angle, glm::vec3(0, 1, 0));
 
-		transform = glm::scale(transform, glm::vec3(5.f));
+		transform = glm::scale(transform, glm::vec3(10));
 
 
 		m_renderer->submit(&bag, &gfx, transform);

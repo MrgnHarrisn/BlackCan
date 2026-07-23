@@ -38,7 +38,9 @@ void Renderer::m_render(Camera& active_camera)
 		// set the shader values
 		item.shader->setMat4("projection", projection);
 		item.shader->setMat4("view", view);
+		item.shader->setVec3("viewPos", active_camera.Position);
 		item.shader->setMat4("model", item.transform);
+		item.shader->setInt("u_activeLightCount", 1);
 
 		// draw the model
 		item.model->Draw(*(item.shader));
